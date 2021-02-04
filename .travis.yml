@@ -14,11 +14,6 @@ cache:
 
 script: "./gradlew clean build"
 
-# CI 실행 완료 시 메일로 알람
-notifications:
-  email:
-    recipients:
-      - plto001@gmail.com
 
 before_deploy:
   - zip -r spring-boot-demo *
@@ -26,12 +21,29 @@ before_deploy:
   - mv spring-boot-demo.zip deploy/spring-boot-demo.zip
 
 deploy:
-  -provider: s3
-  access_key_id: $AWS_ACCESS_KEY # Travis repo settings 에 설정된 값
-  secret_access_key: $AWS_SECRET_KEY # Travis repo settings 에 설정된 값
-  bucket: spring-boot-demo-build
-  region: ap-northeast-2
-  skip_cleanup: true
-  acl: private # zip 파일 접근을 private 으로
-  local_dir: deploy # before_deploy 에서 생성한 디렉토리
-  wait-until-deployed: true
+  - provider: s3
+    access_key_id: $AWS_ACCESS_KEY # Travis repo settings 에 설정된 값
+    secret_access_key: $AWS_SECRET_KEY # Travis repo settings 에 설정된 값
+    bucket: spring-boot-demo-build
+    region: ap-northeast-2
+    skip_cleanup: true
+    acl: private # zip 파일 접근을 private 으로
+    local_dir: deploy # before_deploy 에서 생성한 디렉토리
+    wait-until-deployed: true
+
+  - provider: codedeploy
+    access_key_id: $AWS_ACCESS_KEY # Travis repo settings 에 설정된 값
+    secret_access_key: $AWS_SECRET_KEY # Travis repo settings 에 설정된 값
+    bucket: spring-boot-demo-build
+    key: spring-boot-demo.zip
+    bundle_type: zip
+    application: spring-boot-demo
+    deployment_group: spring-boot-demo-group
+    region: ap-northeast-2
+    wait-until-deployed: true
+
+# CI 실행 완료 시 메일로 알람
+notifications:
+  email:
+    recipients:
+      - plto001@gmail.com
